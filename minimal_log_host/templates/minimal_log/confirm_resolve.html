@@ -1,0 +1,14 @@
+
+{% extends BASE_TEMPLATE %}
+
+
+{% block content %}
+
+	<h2>Are you sure you want to resolve all {{ count }} matching entries?</h2>
+
+	<a href="{% url 'minimal_log_list' %}" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-chevron-left"></span> Cancel</a>
+	<a href="{{ request.path }}?confirm" class="btn btn-danger btn-lg">Resolve <span class="glyphicon glyphicon-chevron-right"></span></a>
+
+{% endblock content %}
+
+

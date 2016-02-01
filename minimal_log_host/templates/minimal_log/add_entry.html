@@ -1,0 +1,69 @@
+
+{% extends BASE_TEMPLATE %}
+
+{#{% load crispy_forms_tags %}#}
+
+
+{% block title %}
+    Add log entry
+	{{ TITLE_SEPARATOR }}
+	{{ block.super }}
+{% endblock title %}
+
+{% block content %}
+
+	<h1>Add a log entry by hand</h1>
+
+	<p>You can use this form to add log entries. You can also use an external tool to add an entry through a POST request; this is handled by the same view.</p>
+
+	<form class="form-horizontal" action="{% url 'minimal_log_add_entry' %}" method="POST">
+		<div class="form-group">
+			<label for="minimal_log_description">Message:</label>
+			<input id="minimal_log_description" class="form-control" type="text" name="message" />
+		</div>
+		<div class="form-group">
+			<label for="minimal_log_status">Status:</label>
+			<select id="minimal_log_status" class="form-control" name="status">
+				<option value="">&nbsp;</option>
+				{% for key, name in statuses %}
+					<option value="{{ key }}">[{{ key }}] {{ name|title }}</option>
+				{% endfor %}
+			</select>
+		</div>
+		<div class="form-group">
+			<label for="minimal_log_key">Keys:</label>
+			{% if request.user.is_staff %}
+				<select id="minimal_log_key" class="form-control" name="key">
+					<option value="">&nbsp;</option>
+					{% for key in keys %}
+						<option value="{{ key.value }}">{{ key.description }} ("...{{ key.key_end }}" by {{ key.adder }})</option>
+					{% endfor %}
+				</select>
+			{% else %}
+				<input id="minimal_log_key" class="form-control" type="text" name="key" placeholder="for example FbisY3s8apIqYUj9iVJF9W1kN8npUSWx"/>
+			{% endif %}
+		</div>
+		<div class="form-group">
+{#			{% csrf_token %}#}
+			<input type="submit" class="btn btn-success btn-lg btn-block" value="Add log entry"/>
+		</div>
+	</form>
+
+	<p>To use an external program, you should:
+
+	<ul>
+	    <li>Submit POST request to the current page's url: <a href="{{ SITE_URL }}{% url 'minimal_log_add_entry' %}">{{ SITE_URL }}{% url 'minimal_log_add_entry' %}</a>.</li>
+		<li><strong>message</strong> should be a text describing the event that you want to log.</li>
+		<li><strong>status</strong> can be one of {% for status in statuses.keys %}{{ status }}{% if not forloop.last %}, {% endif %}{% endfor %}.</li>
+		<li><strong>key</strong> should be your secret key for posting logs.</li>
+	</ul>
+
+	<p>For example:</p>
+
+	<pre><code>curl --silent --show-error --request POST 'https://markv.nl/log/add' --data-urlencode "message=test" --data-urlencode "status=info" --data-urlencode 'key=FbisY3s8apIqYUj9iVJF9W1kN8npUSWx'</code></pre>
+
+	<p>Do you want to <a href="{% url 'minimal_log_list' %}">view log entries</a>?</p>
+
+{% endblock content %}
+
+

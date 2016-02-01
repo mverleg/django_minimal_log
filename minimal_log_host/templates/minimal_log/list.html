@@ -1,0 +1,90 @@
+
+{% extends BASE_TEMPLATE %}
+
+{#{% load crispy_forms_tags %}#}
+
+
+{% block title %}
+	Log
+	{{ TITLE_SEPARATOR }}
+	{{ block.super }}
+{% endblock title %}
+
+{% block content %}
+	{% for entry in entries %}
+		{% if   entry.status == 'error' %}<div class="alert alert-danger"><span class="glyphicon glyphicon-flash">
+		{% elif entry.status == 'warn' %}<div class="alert alert-warning"><span class="glyphicon glyphicon-warning-sign">
+		{% elif entry.status == 'info' %}<div class="alert alert-info"><span class="glyphicon glyphicon-info-sign">
+		{% elif entry.status == 'good' %}<div class="alert alert-success"><span class="glyphicon glyphicon-check">
+		{% else %}<div class="alert alert-info"><span class="glyphicon glyphicon-question-sign">
+		{% endif %}</span>
+		<strong>#{{ entry.pk }}</strong>
+		<strong>on</strong> {{ entry.added }} <strong>from</strong> {{ entry.key.description }}
+		{% if entry.resolved %}<em style="font-style: italic;">resolved {{ entry.resolved }}</em>{% endif %}
+		<span class="hover_show"><span>&nbsp;ip: {{ entry.from_ip }} key: ...{{ entry.key_end }}&nbsp;&nbsp;&nbsp;</span></span>
+		<form action="{% url 'minimal_log_resolve' %}?{% if show %}show={{  show }}&{% endif %}{% if show_resolved %}resolved&{% endif %}page={{ entries.number }}" method="POST" style="float: right;">
+			{%  csrf_token %}
+			<input type="hidden" name="entry" value="{{  entry.pk }}" />
+			{% if entry.resolved %}
+				<button class="linkstyle_button" type="submit" name="action" value="unresolve" title="undo marking this log entry as resolved">
+					<span class="glyphicon glyphicon-repeat"></span>
+				</button>
+			{% else %}
+				<button class="linkstyle_button" type="submit" name="action" value="resolve" title="mask this log entry as resolved">
+					<span class="glyphicon glyphicon-ok"></span>
+				</button>
+			{% endif %}
+		</form>
+		<br />
+		{{ entry.description }}</div>
+	{%  empty %}
+		{% if show_resolved %}
+			<p class="well"><strong>No log entries</strong>{% if show %} that match the criteria. <a href="?resolved">Remove criteria</a>?{% else %}!{% endif %}</p>
+		{% else %}
+			<p class="well"><strong>No unresolved log entries</strong>{% if show %} that match the criteria{% endif %}! Do you want to see <a href="?{% if show %}show={{ show }}&{% endif %}resolved">resolved entries</a>{% if show %}, or maybe <a href="?">remove criteria</a>{% endif %}?</p>
+		{% endif %}
+	{% endfor %}
+
+	{% if entries.paginator.count %}
+		<div class="pagination">
+			<span class="step-links">
+				{% if entries.has_previous %}
+					<a href="?{% if show %}show={{ show }}&{% endif %}{% if show_resolved %}resolved&{% endif %}page={{ entries.previous_page_number }}">previous</a>
+				{% endif %}
+
+				<span class="current">
+					page {{ entries.number }} of {{ entries.paginator.num_pages }}
+				</span>
+
+				{% if entries.has_next %}
+					<a href="?{% if show %}show={{  show }}&{% endif %}{% if show_resolved %}resolved&{% endif %}page={{ entries.next_page_number }}">next</a>
+				{% endif %}
+			</span>
+		</div>
+	{% endif %}
+
+{% endblock content %}
+
+{% block sidebar %}
+
+	<h1>Log entries</h1>
+
+	<p>These log entries can come from different services and websites.</p>
+
+	<p>You can <a href="{% url 'minimal_log_add_entry' %}">add an entry at this page</a>.</p>
+
+	<p>You can filter entries; use for example GET <code>?show=good,error,warn</code> to show only some type of message, and <code>?resolved</code> to show resolved items.
+	{% if show or show_resolved %} <a href="?page={{ entries.number }}">Remove filters</a>.{% endif %}</p>
+
+	<form action="{% url 'minimal_log_resolve_all' %}?{% if show %}show={{ show }}&{% endif %}{% if show_resolved %}resolved&{% endif %}" method="POST" style="display: inline;">
+		{%  csrf_token %}
+		<input type="hidden" name="next" value="{{ request.get_full_path }}" />
+		<button class="linkstyle_button" type="submit">
+			Resolve all log entries
+		</button>
+	</form>
+	on all pages that match the current filters (the visible ones). There are <strong>{{ unresolved_count }}</strong> unresolved matches.
+
+{% endblock sidebar %}
+
+

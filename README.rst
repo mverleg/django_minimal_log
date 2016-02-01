@@ -7,13 +7,40 @@ A very minimal logging server and client for Django. The client can also be repl
 It has a minimal feature set:
 
 - Register as a Django logging handler.
-- Log events, which can have a message, a source and a level.
-- Show logged messages, filtered by level.
+- Log events, which can have a message, a source, a level and a time.
+- Show logged messages, which you can filter by level.
 - Resolve messages to remove them from the list (can be undone).
 - Use secret keys as authentication to prevent unauthorized logs.
 - Easily log from multiple sources and revoke keys for specific sources.
+- Add log messages by hand from the server interface if needed.
+- Logs some meta info, like who resolved an entry and which IP submitted it.
 
 That's about it! If you want fancy graphs and more than 3 minutes of setup, maybe try Sentry.
+
+Server and clients
+---------------------------------
+
+You need to have a running, reachable host that logs are sent to. Besides that, you can have any number of programs that report events to this host.
+
+It is not advisable to have the host and clients running in the same project. In that case, if the client is having a problem it wants to report, chances are the host is having the same problem, and won't register the event.
+
+Server
+=================================
+
+url(r'^log/', include(minimal_log_host.urls)),
+
+BASE_TEMPLATE, {% block content %}
+
+
+Clients - Django
+=================================
+
+
+
+Clients - Bash
+=================================
+
+
 
 License
 ---------------------------------

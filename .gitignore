@@ -1,0 +1,4 @@
+.pypirc
+*.pyc
+*~
+.idea/

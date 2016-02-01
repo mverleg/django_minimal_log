@@ -11,6 +11,7 @@ with open('requires.pip', 'r') as fh:
 	requires = [package.split('# ')[0].strip() for package in fh.read().splitlines()
 		if package.strip() and not package.startswith('#')]
 
+
 setup(
 	name='django_minimal_log',
 	description='A lot of random utilities',
@@ -48,6 +49,7 @@ setup(
 	], requires=[
 		'django',
 		'requests',
+		'django-ipware',
 	]
 )
 
