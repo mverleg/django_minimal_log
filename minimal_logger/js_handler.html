@@ -1,0 +1,47 @@
+<script>
+	/*
+	    Set up logging BEFORE any other javascript.
+	*/
+	var minimal_log_error_count = 0;
+
+	function minimal_log_js_handler (message, file, line, column, obj) {
+	    /* Unattach the error handler to avoid recursion; reattached at the end. */
+	    window.onerror = function () {};
+	    /* Don't report too many errors for one request. */
+	    minimal_log_error_count += 1;
+	    if (minimal_log_error_count > 3) {
+	        console.log('did not report error #' + minimal_log_error_count + ' because the limit was reached');
+	        return
+	    }
+	    /* If the error is in an external file, we might get a useless message, no use reporting that. */
+	    if (message.indexOf('Script error.') > -1) {
+	        console.log('cross domain cryptic error message not reported');
+	        return;
+	    }
+	    /* Build and send the report request */
+	    var log_message = file + ' line ' + line + ':' + column + '; \n' + message;  //#todo
+	    var log_params = "{{ MINIMAL_LOG_JS_PARAMS }}&message=" + encodeURIComponent(log_message);
+	    xhr = new XMLHttpRequest();
+	    xhr.open("POST", "{{ MINIMAL_LOG_JS_URL }}", true);
+	    xhr.onerror = function () {
+	        console.log('logging did not work! url: "{{ MINIMAL_LOG_JS_URL }}"; parameters: ' + log_params);
+	    };
+	    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+	    xhr.send(log_params);
+	    /* Reattach the event handler (hope nothing important was missed). */
+	    window.onerror = minimal_log_js_handler;
+	}
+
+	/* Attach the logger only if the context variables to do so are known. */
+	if ("{{ MINIMAL_LOG_JS_URL }}" && "{{ MINIMAL_LOG_JS_PARAMS }}")
+	{
+	    window.onerror = minimal_log_js_handler;
+	}
+	else
+	{
+	    console.log('minimal_log javascript logger activated, but did not find ' +
+	        'MINIMAL_LOG_JS_URL and/or MINIMAL_LOG_JS_PARAMS in the context');
+	}
+</script>
+
+

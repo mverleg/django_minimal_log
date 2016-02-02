@@ -7,11 +7,6 @@
 from setuptools import setup, find_packages
 
 
-with open('requires.pip', 'r') as fh:
-	requires = [package.split('# ')[0].strip() for package in fh.read().splitlines()
-		if package.strip() and not package.startswith('#')]
-
-
 setup(
 	name='django_minimal_log',
 	description='A lot of random utilities',
@@ -22,11 +17,22 @@ setup(
 	author_email='mdilligaf@gmail.com',
 	license='LICENSE.txt',
 	keywords=['django', 'logging',],
-	version='0.1',
-	packages=['minimal_log_host', 'minimal_logger',],
+	version='0.2',
+	packages=[
+		'minimal_log_host',
+		'minimal_logger',
+		'minimal_log_host.migrations',
+	],
+	# package_data={
+	# 	'minimal_log_host': ['*.html',],
+	# 	'minimal_logger': ['send_log.example.sh',],
+	# },
 	include_package_data=True,
 	zip_safe=False,
-	install_requires=requires,
+	requires=[
+		'django',
+		'requests',
+	],
 	classifiers=[
 		'Development Status :: 5 - Production/Stable',
 		'Intended Audience :: Developers',
@@ -45,12 +51,7 @@ setup(
 		'Programming Language :: Python :: 3.5',
 		'Programming Language :: Python :: Implementation :: PyPy',
 		'Topic :: Software Development :: Libraries :: Python Modules',
-		'Private :: Do Not Upload By Accident',
-	], requires=[
-		'django',
-		'requests',
-		'django-ipware',
-	]
+	],
 )
 
 

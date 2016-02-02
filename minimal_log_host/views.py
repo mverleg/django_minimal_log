@@ -1,5 +1,4 @@
 
-from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.urlresolvers import reverse
@@ -8,7 +7,6 @@ from django.shortcuts import render, redirect
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from ipware.ip import get_ip
-from .forms import MinimalLogForm
 from .models import MinimalLogEntry, MinimalLogKey
 
 statuses = {item[0] for item in MinimalLogEntry.STATUS_OPTIONS}
