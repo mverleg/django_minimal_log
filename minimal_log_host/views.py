@@ -1,4 +1,4 @@
-
+from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.urlresolvers import reverse
@@ -55,6 +55,7 @@ def add_log_entry(request):
 	if request.user.is_staff:
 		keys = MinimalLogKey.objects.filter(active=True)
 	return render(request, 'minimal_log/add_entry.html', {
+		'MINIMAL_LOG_TEMPLATE': settings.MINIMAL_LOG_TEMPLATE,
 		'statuses': MinimalLogEntry.STATUS_OPTIONS,
 		'keys': keys,
 	})
@@ -87,6 +88,7 @@ def list_log(request):
 	except EmptyPage:
 		entries = paginator.page(paginator.num_pages)
 	return render(request, 'minimal_log/list.html', {
+		'MINIMAL_LOG_TEMPLATE': settings.MINIMAL_LOG_TEMPLATE,
 		'entries': entries,
 		'show': ','.join(show),
 		'show_resolved': show_resolved,
@@ -136,7 +138,10 @@ def resolve_all_log_entries(request):
 		query = query.filter(status__in=show)
 	unresolved_entries_count = query.count()
 	if not 'confirm' in request.GET and unresolved_entries_count > 3:
-		return render(request, 'minimal_log/confirm_resolve.html', {'count': unresolved_entries_count})
+		return render(request, 'minimal_log/confirm_resolve.html', {
+			'MINIMAL_LOG_TEMPLATE': settings.MINIMAL_LOG_TEMPLATE,
+			'count': unresolved_entries_count
+		})
 	entries_list = query.order_by('-added')
 	entries_list.update(resolved=now(), solver=request.user)
 	url = reverse('minimal_log_list') + '?'

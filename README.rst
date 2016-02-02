@@ -44,6 +44,10 @@ In ``settings.py``, add ``minimal_log_host`` to apps (position doesn't matter)::
 		'minimal_log_host',
 	)
 
+You should also define the template that minimal-logs extends when displaying logs. It should contain a ``{% block content %}``::
+
+    MINIMAL_LOG_TEMPLATE = 'my_base_template.html'
+
 In ``urls.py``, choose a base url (``/log/`` in this example)::
 
 	# import minimal_log_host.urls

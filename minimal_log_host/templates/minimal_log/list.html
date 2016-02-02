@@ -1,16 +1,24 @@
 
-{% extends BASE_TEMPLATE %}
+{% extends MINIMAL_LOG_TEMPLATE %}
 
-{#{% load crispy_forms_tags %}#}
-
-
-{% block title %}
-	Log
-	{{ TITLE_SEPARATOR }}
-	{{ block.super }}
-{% endblock title %}
 
 {% block content %}
+
+	<h1>View entries ({{ unresolved_count }} unresolved)</h1>
+
+	<div>
+		You can <a href="{% url 'minimal_log_add_entry' %}">add an entry</a>.
+		You can also filter entries using GET parameters, using <code>?show=good,error,warn</code> to show only some type of message, and <code>?resolved</code> to show already resolved messages.
+		{% if show or show_resolved %} <a href="?page={{ entries.number }}">Remove filters</a>.{% endif %}
+		<form action="{% url 'minimal_log_resolve_all' %}?{% if show %}show={{ show }}&{% endif %}{% if show_resolved %}resolved&{% endif %}" method="POST" style="display: inline;">
+			{%  csrf_token %}
+			<input type="hidden" name="next" value="{{ request.get_full_path }}" />
+			<button class="linkstyle_button" type="submit">
+				Resolve all log entries
+			</button>
+		</form>
+	</div>
+
 	{% for entry in entries %}
 		{% if   entry.status == 'error' %}<div class="alert alert-danger"><span class="glyphicon glyphicon-flash">
 		{% elif entry.status == 'warn' %}<div class="alert alert-warning"><span class="glyphicon glyphicon-warning-sign">
@@ -64,27 +72,5 @@
 	{% endif %}
 
 {% endblock content %}
-
-{% block sidebar %}
-
-	<h1>Log entries</h1>
-
-	<p>These log entries can come from different services and websites.</p>
-
-	<p>You can <a href="{% url 'minimal_log_add_entry' %}">add an entry at this page</a>.</p>
-
-	<p>You can filter entries; use for example GET <code>?show=good,error,warn</code> to show only some type of message, and <code>?resolved</code> to show resolved items.
-	{% if show or show_resolved %} <a href="?page={{ entries.number }}">Remove filters</a>.{% endif %}</p>
-
-	<form action="{% url 'minimal_log_resolve_all' %}?{% if show %}show={{ show }}&{% endif %}{% if show_resolved %}resolved&{% endif %}" method="POST" style="display: inline;">
-		{%  csrf_token %}
-		<input type="hidden" name="next" value="{{ request.get_full_path }}" />
-		<button class="linkstyle_button" type="submit">
-			Resolve all log entries
-		</button>
-	</form>
-	on all pages that match the current filters (the visible ones). There are <strong>{{ unresolved_count }}</strong> unresolved matches.
-
-{% endblock sidebar %}
 
 

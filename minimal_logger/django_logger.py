@@ -1,6 +1,6 @@
 
 from sys import stderr
-from logging import Handler, NOTSET
+from logging import Handler
 from .python_log import send_log, MinimalLogError, try_get_domain
 
 
@@ -17,9 +17,6 @@ class MinimalLogHandler(Handler):
 		'DEBUG': 'info',
 		'NOTSET': 'error',
 	}
-
-	# def __init__(self, level=NOTSET):
-	# 	super(MinimalLogHandler, self).__init__(level=level)
 
 	def emit(self, record):
 		message = '{0:s} {1:s}: {2:s}'.format(try_get_domain(), record.request.path, record.getMessage())
