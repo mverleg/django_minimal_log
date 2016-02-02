@@ -18,8 +18,8 @@ class MinimalLogHandler(Handler):
 		'NOTSET': 'error',
 	}
 
-	def __init__(self, level=NOTSET):
-		super(MinimalLogHandler, self).__init__(level=level)
+	# def __init__(self, level=NOTSET):
+	# 	super(MinimalLogHandler, self).__init__(level=level)
 
 	def emit(self, record):
 		message = '{0:s} {1:s}: {2:s}'.format(try_get_domain(), record.request.path, record.getMessage())

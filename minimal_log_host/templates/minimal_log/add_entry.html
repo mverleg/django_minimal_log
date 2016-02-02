@@ -3,13 +3,6 @@
 
 {#{% load crispy_forms_tags %}#}
 
-
-{% block title %}
-    Add log entry
-	{{ TITLE_SEPARATOR }}
-	{{ block.super }}
-{% endblock title %}
-
 {% block content %}
 
 	<h1>Add a log entry by hand</h1>
@@ -60,7 +53,7 @@
 
 	<p>For example:</p>
 
-	<pre><code>curl --silent --show-error --request POST 'https://markv.nl/log/add' --data-urlencode "message=test" --data-urlencode "status=info" --data-urlencode 'key=FbisY3s8apIqYUj9iVJF9W1kN8npUSWx'</code></pre>
+	<pre><code>curl --silent --show-error --request POST 'https://example.com/log/add/' --data-urlencode "message=test" --data-urlencode "status=info" --data-urlencode 'key=FbisY3s8apIqYUj9iVJF9W1kN8npUSWx'</code></pre>
 
 	<p>Do you want to <a href="{% url 'minimal_log_list' %}">view log entries</a>?</p>
 

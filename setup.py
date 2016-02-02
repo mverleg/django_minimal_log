@@ -32,6 +32,7 @@ setup(
 	requires=[
 		'django',
 		'requests',
+		'django-ipware',
 	],
 	classifiers=[
 		'Development Status :: 5 - Production/Stable',
