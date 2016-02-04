@@ -1,0 +1,17 @@
+
+{% extends MINIMAL_LOG_TEMPLATE %}
+
+
+{% block content %}
+
+	<h2>You do not have permission to {{ action }} log entries</h2>
+
+	{% if request.user.is_authenticated %}
+		<p>To {{ action }} log entries, a staff member should grant {{ request.user.username }} (you) the permission to change log entries.</p>
+	{% else %}
+		<p>If you have an account that does have the ability to {{ action }} log entries, you can <a href="{{ LOGIN_URL }}?next={{ request.get_full_path }}">log in</a> and try again.</p>
+	{% endif %}
+
+{% endblock content %}
+
+

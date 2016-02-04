@@ -6,16 +6,20 @@
 
 	<h1>View entries ({{ unresolved_count }} unresolved)</h1>
 
-	<div>
+	<!-- standardized url: ?{% if show_statuses %}show={{ show_statuses }}&{% endif %}{% if show_sources %}from={{ show_sources }}&{% endif %}{% if show_resolved %}resolved&{% endif %}{% if entries.number > 1 %}page={{ entries.number }}{% endif %} -->
+
+	<div style="margin-bottom: 1.5em;">
 		You can <a href="{% url 'minimal_log_add_entry' %}">add an entry</a>.
-		You can also filter entries using GET parameters, using <code>?show=good,error,warn</code> to show only some type of message, and <code>?resolved</code> to show already resolved messages.
-		{% if show or show_resolved %} <a href="?page={{ entries.number }}">Remove filters</a>.{% endif %}
-		<form action="{% url 'minimal_log_resolve_all' %}?{% if show %}show={{ show }}&{% endif %}{% if show_resolved %}resolved&{% endif %}" method="POST" style="display: inline;">
+		You can also filter entries using GET parameters,
+			using <code>?show=good,error,warn</code> to show only some type of message,
+			<code>from=1,2</code> to show only some <span title="You can also click 'from' on an entry from that source" style="text-decoration: underline dotted; cursor: help;">sources</span>
+			and <code>?resolved</code> to show already resolved messages.
+		{% if show_statuses or show_resolved %} <a href="?page={{ entries.number }}">Remove filters</a>.{% endif %}
+		<form action="{% url 'minimal_log_resolve_all' %}?{% if show_statuses %}show={{ show_statuses }}&{% endif %}{% if show_sources %}from={{ show_sources }}{% endif %}" method="POST" style="display: inline;">
 			{%  csrf_token %}
-			<input type="hidden" name="next" value="{{ request.get_full_path }}" />
-			<button class="linkstyle_button" type="submit">
-				Resolve all log entries
-			</button>
+			<input type="hidden" name="next" value="{{ request.path }}?{% if show_statuses %}show={{ show_statuses }}&{% endif %}{% if show_sources %}from={{ show_sources }}&{% endif %}{% if show_resolved %}resolved&{% endif %}" />
+			<button class="linkstyle_button" type="submit" style="color: #337ab7; text-decoration: none;" title="{% url 'minimal_log_resolve_all' %}?{% if show_statuses %}show={{ show_statuses }}&{% endif %}{% if show_sources %}from={{ show_sources }}{% endif %}">
+				Resolve all log entries</button>{% if show_statuses or show_sources %} that match current filters{% endif %}.
 		</form>
 	</div>
 
@@ -27,12 +31,14 @@
 		{% else %}<div class="alert alert-info"><span class="glyphicon glyphicon-question-sign">
 		{% endif %}</span>
 		<strong>#{{ entry.pk }}</strong>
-		<strong>on</strong> {{ entry.added }} <strong>from</strong> {{ entry.key.description }}
+		<strong>on</strong> {{ entry.added }}
+		<strong><a href="?{% if show_statuses %}show={{ show_statuses }}&{% endif %}from={{ entry.key.pk }}&{% if show_resolved %}resolved&{% endif %}" style="color: inherit; text-decoration: underline;">from</a></strong> {{ entry.key.description }}
 		{% if entry.resolved %}<em style="font-style: italic;">resolved {{ entry.resolved }}</em>{% endif %}
 		<span class="hover_show"><span>&nbsp;ip: {{ entry.from_ip }} key: ...{{ entry.key_end }}&nbsp;&nbsp;&nbsp;</span></span>
-		<form action="{% url 'minimal_log_resolve' %}?{% if show %}show={{  show }}&{% endif %}{% if show_resolved %}resolved&{% endif %}page={{ entries.number }}" method="POST" style="float: right;">
+		<form action="{% url 'minimal_log_resolve' %}" method="POST" style="float: right;">
 			{%  csrf_token %}
-			<input type="hidden" name="entry" value="{{  entry.pk }}" />
+			<input type="hidden" name="entry" value="{{ entry.pk }}" />
+			<input type="hidden" name="next" value="{{ request.path }}?{% if show_statuses %}show={{ show_statuses }}&{% endif %}{% if show_sources %}from={{ show_sources }}&{% endif %}{% if show_resolved %}resolved&{% endif %}" />
 			{% if entry.resolved %}
 				<button class="linkstyle_button" type="submit" name="action" value="unresolve" title="undo marking this log entry as resolved">
 					<span class="glyphicon glyphicon-repeat"></span>
@@ -47,9 +53,9 @@
 		{{ entry.description }}</div>
 	{%  empty %}
 		{% if show_resolved %}
-			<p class="well"><strong>No log entries</strong>{% if show %} that match the criteria. <a href="?resolved">Remove criteria</a>?{% else %}!{% endif %}</p>
+			<p class="well"><strong>No log entries</strong>{% if show_statuses %} that match the criteria. <a href="?resolved">Remove criteria</a>?{% else %}!{% endif %}</p>
 		{% else %}
-			<p class="well"><strong>No unresolved log entries</strong>{% if show %} that match the criteria{% endif %}! Do you want to see <a href="?{% if show %}show={{ show }}&{% endif %}resolved">resolved entries</a>{% if show %}, or maybe <a href="?">remove criteria</a>{% endif %}?</p>
+			<p class="well"><strong>No unresolved log entries</strong>{% if show_statuses %} that match the criteria{% endif %}! Do you want to see <a href="?{% if show_statuses %}show={{ show_statuses }}&{% endif %}{% if show_sources %}from={{ show_sources }}&{% endif %}resolved&{% if entries.number > 1 %}page={{ entries.number }}{% endif %}">resolved entries</a>{% if show_statuses %}, or maybe <a href="?">remove criteria</a>{% endif %}?</p>
 		{% endif %}
 	{% endfor %}
 
@@ -57,7 +63,7 @@
 		<div class="pagination">
 			<span class="step-links">
 				{% if entries.has_previous %}
-					<a href="?{% if show %}show={{ show }}&{% endif %}{% if show_resolved %}resolved&{% endif %}page={{ entries.previous_page_number }}">previous</a>
+					<a href="?{% if show_statuses %}show={{ show_statuses }}&{% endif %}{% if show_sources %}from={{ show_sources }}&{% endif %}{% if show_resolved %}resolved&{% endif %}page={{ entries.previous_page_number }}">previous</a>
 				{% endif %}
 
 				<span class="current">
@@ -65,7 +71,7 @@
 				</span>
 
 				{% if entries.has_next %}
-					<a href="?{% if show %}show={{  show }}&{% endif %}{% if show_resolved %}resolved&{% endif %}page={{ entries.next_page_number }}">next</a>
+					<a href="?{% if show_statuses %}show={{ show_statuses }}&{% endif %}{% if show_sources %}from={{ show_sources }}&{% endif %}{% if show_resolved %}resolved&{% endif %}page={{ entries.next_page_number }}">next</a>
 				{% endif %}
 			</span>
 		</div>

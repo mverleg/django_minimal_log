@@ -1,5 +1,6 @@
+
 from django.conf import settings
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib import messages
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
@@ -8,8 +9,6 @@ from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from ipware.ip import get_ip
 from .models import MinimalLogEntry, MinimalLogKey
-
-statuses = {item[0] for item in MinimalLogEntry.STATUS_OPTIONS}
 
 
 @csrf_exempt
@@ -24,11 +23,11 @@ def add_log_entry(request):
 		elif not len(request.POST['status']):
 			status = request.POST['status']
 			note += ' used status "info" since status was empty;'
-		elif request.POST['status'] in statuses:
+		elif request.POST['status'] in all_statuses:
 			status = request.POST['status']
 		else:
 			return HttpResponse('status "{0:s}" is not valid (choose one of {1:s})'.format(request.POST['status'],
-				', '.join(s for s in statuses)), status=400)
+				', '.join(s for s in all_statuses)), status=400)
 		if 'message' in request.POST and len(request.POST['message']) >= 3:
 			message = request.POST['message']
 		elif 'description' in request.POST and len(request.POST['description']) >= 3:
@@ -61,7 +60,14 @@ def add_log_entry(request):
 	})
 
 
-@staff_member_required
+def permission_denied(request, action):
+	return render(request, 'minimal_log/permission_denied.html', {
+		'MINIMAL_LOG_TEMPLATE': settings.MINIMAL_LOG_TEMPLATE,
+		'LOGIN_URL': settings.LOGIN_URL,
+		'action': action,
+	})
+
+
 def list_log(request):
 	"""
 		GET parameters (all optional):
@@ -70,15 +76,13 @@ def list_log(request):
 		:param show [str,str,*]: the types of messages to show
 		:param resolved: show resolved messages [no argument]
 	"""
-	show = [item for item in request.GET.get('show', '').split(',') if item in statuses]
-	query = MinimalLogEntry.objects.all()
-	if show:
-		query = query.filter(status__in=show)
-	show_query = query
-	show_resolved = 'resolved' in request.GET
-	if not show_resolved:
-		query = query.filter(resolved__isnull=True)
-	entries_list = query.order_by('-added')
+	if not (request.user.has_perm('minimal_log_host.change_logentry')):
+		return permission_denied(request, 'view')
+	entries_list, unresolved_count, show_statuses, show_sources, show_resolved = filtered_entries(
+		statuses=request.GET.get('show', ''),
+		sources=request.GET.get('from', ''),
+		resolved='resolved' in request.GET,
+	)
 	paginator = Paginator(entries_list, 20)
 	page = request.GET.get('page')
 	try:
@@ -90,65 +94,89 @@ def list_log(request):
 	return render(request, 'minimal_log/list.html', {
 		'MINIMAL_LOG_TEMPLATE': settings.MINIMAL_LOG_TEMPLATE,
 		'entries': entries,
-		'show': ','.join(show),
+		'show_sources': ','.join(str(src) for src in sorted(show_sources)),
+		'show_statuses': ','.join(show_statuses),
 		'show_resolved': show_resolved,
 		'pagenr': entries.number,
-		'unresolved_count': show_query.filter(resolved__isnull=True).count(),
+		'unresolved_count': unresolved_count,
 	})
 
 
-@staff_member_required
 def resolve_log_entry(request):
+	if not request.method == 'POST':
+		messages.error(request, 'Log entry was not resolved (the request did not have POST data).')
+		return redirect(reverse('minimal_log_list'), permanent=False)
+	if not (request.user.has_perm('minimal_log_host.change_logentry')):
+		return permission_denied(request, 'resolve')
 	try:
 		entry = MinimalLogEntry.objects.get(pk=int(request.POST['entry']))
 	except ValueError:
-		return HttpResponse('key "%s" is not an integer' % request.POST['entry'])
+		return HttpResponse('key "{0:s}" is not an integer'.format(request.POST['entry']))
 	except KeyError:
 		return HttpResponse('no entry provided')
 	except MinimalLogEntry.DoesNotExist:
-		return HttpResponse('entry with key "%s" not found' % request.POST['entry'])
+		return HttpResponse('entry with key "{0:s}" not found'.format(request.POST['entry']))
 	action = request.POST.get('action', None)
 	if action not in ('resolve', 'unresolve',):
-		return HttpResponse('action should be "[un]resolve", not "%s"' % action)
+		return HttpResponse('action should be "[un]resolve", not "{0:s}"'.format(action))
 	if action == 'resolve':
 		entry.resolved = now()
 		entry.solver = request.user
+		messages.success(request, 'Log entry #{0:d} was resolved.'.format(entry.pk))
 	else:
 		entry.resolved = None
 		entry.solver = None
+		messages.success(request, 'Log entry #{0:d} was marked as not resolved.'.format(entry.pk))
 	entry.save()
-	url = reverse('minimal_log_list') + '?'
-	show = [item for item in request.GET.get('show', '').split(',') if item in statuses]
-	if show:
-		url += 'show=' + ','.join(show) + '&'
-	if 'resolved' in request.GET:
-		url += 'resolved&'
-	page = int(request.GET.get('page', 1))
-	if page > 1:
-		url += 'page=' + str(page)
-	return redirect(to=url.rstrip('?'))
+	if request.POST.get('next', None):
+		return redirect(to=request.POST['next'], permanent=False)
+	return redirect(to=reverse('minimal_log_list'), permanent=False)
 
 
-@staff_member_required
 def resolve_all_log_entries(request):
-	#todo: check change permission?
-	show = [item for item in request.GET.get('show', '').split(',') if item in statuses]
-	query = MinimalLogEntry.objects.filter(resolved__isnull=True)
-	if show:
-		query = query.filter(status__in=show)
-	unresolved_entries_count = query.count()
-	if not 'confirm' in request.GET and unresolved_entries_count > 3:
+	if not request.method == 'POST':
+		messages.error(request, 'Log entries were not resolved (the request did not have POST data).')
+		return redirect(reverse('minimal_log_list'), permanent=False)
+	if not (request.user.has_perm('minimal_log_host.change_logentry')):
+		return permission_denied(request, 'resolve')
+	entries_list, unresolved_count, show_statuses, show_sources, show_resolved = filtered_entries(
+		statuses=request.GET.get('show', ''),
+		sources=request.GET.get('from', ''),
+		resolved=False,
+		sorted=False,
+	)
+	if not 'confirm' in request.POST and unresolved_count > 3:
 		return render(request, 'minimal_log/confirm_resolve.html', {
 			'MINIMAL_LOG_TEMPLATE': settings.MINIMAL_LOG_TEMPLATE,
-			'count': unresolved_entries_count
+			'count': unresolved_count,
+			'next': request.POST.get('next', None),
 		})
-	entries_list = query.order_by('-added')
 	entries_list.update(resolved=now(), solver=request.user)
-	url = reverse('minimal_log_list') + '?'
-	if show:
-		url += 'show=' + ','.join(show) + '&'
-	if 'resolved' in request.GET:
-		url += 'resolved&'
-	return redirect(to=url.rstrip('?'))
+	messages.success(request, '{0:d} log entries were resolved.'.format(unresolved_count))
+	if request.POST.get('next', None):
+		return redirect(to=request.POST['next'], permanent=False)
+	return redirect(to=reverse('minimal_log_list'), permanent=False)
+
+
+all_statuses = {item[0] for item in MinimalLogEntry.STATUS_OPTIONS}
+
+
+def filtered_entries(statuses='', resolved=False, sources='', sorted=True):
+	show_statuses = [item for item in statuses.split(',') if item in all_statuses]
+	entries_list = MinimalLogEntry.objects.all()
+	if show_statuses:
+		entries_list = entries_list.filter(status__in=show_statuses)
+	try:
+		show_sources = set(int(source) for source in sources.split(','))
+	except ValueError:
+		show_sources = set()
+	if show_sources:
+		entries_list = entries_list.filter(key__pk__in=show_sources)
+	unresolved_count = entries_list.filter(resolved__isnull=True).count()
+	if not resolved:
+		entries_list = entries_list.filter(resolved__isnull=True)
+	if sorted:
+		entries_list = entries_list.order_by('-added')
+	return entries_list, unresolved_count, show_statuses, show_sources, resolved
 
 

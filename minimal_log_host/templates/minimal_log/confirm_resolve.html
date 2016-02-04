@@ -6,8 +6,16 @@
 
 	<h2>Are you sure you want to resolve all {{ count }} matching entries?</h2>
 
-	<a href="{% url 'minimal_log_list' %}" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-chevron-left"></span> Cancel</a>
-	<a href="{{ request.path }}?confirm" class="btn btn-danger btn-lg">Resolve <span class="glyphicon glyphicon-chevron-right"></span></a>
+	<form method="POST" action="{{ request.path }}">
+		{%  csrf_token %}
+		<input type="hidden" name="confirm" value="yes" />
+		{% if next %}
+			<input type="hidden" name="next" value="{{ next }}" />
+		{% endif %}
+		<a href="{% url 'minimal_log_list' %}" class="btn btn-default">Cancel</a>
+		<input type="submit" class="btn btn-danger" value="Resolve"/>
+{#		<a href="{{ request.path }}?confirm" class="btn btn-danger btn-lg">Resolve <span class="glyphicon glyphicon-chevron-right"></span></a>#}
+	</form>
 
 {% endblock content %}
 
