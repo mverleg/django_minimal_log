@@ -9,7 +9,7 @@ from setuptools import setup
 
 setup(
 	name='django_minimal_log',
-	description='A lot of random utilities',
+	description='Simple logging functionality for Django',
 	long_description='',
 	url='https://github.com/mverleg/django_minimal_log',
 	author='Mark V',

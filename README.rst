@@ -7,6 +7,7 @@ A very minimal logging server and client for Django. The client can also be repl
 It has a minimal feature set:
 
 - Register as a Django logging handler.
+- Register as a Javascript logging handler (in combination with Django).
 - Log events, which can have a message, a source, a level and a time.
 - Show logged messages, which you can filter by level.
 - Resolve messages to remove them from the list (can be undone).

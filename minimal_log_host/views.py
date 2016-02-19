@@ -48,8 +48,8 @@ def add_log_entry(request):
 		extra_params = set(request.POST.keys()) - {'status', 'description', 'message', 'key'}
 		if extra_params:
 			note += ' you provided extra param(s) {0:s} which are redundant'.format(', '.join(s for s in extra_params))
-		return HttpResponse('{0:s} added'.format(entry.status) +
-			('; {0:s}\n'.format(note.strip()) if note else '\n'))
+		return HttpResponse('{0:s} added{1:s}'.format(entry.status,
+			('; {0:s}\n'.format(note.strip()) if note else '\n')))
 	keys = []
 	if request.user.is_staff:
 		keys = MinimalLogKey.objects.filter(active=True)

@@ -14,7 +14,7 @@
 			using <code>?show=good,error,warn</code> to show only some type of message,
 			<code>from=1,2</code> to show only some <span title="You can also click 'from' on an entry from that source" style="text-decoration: underline dotted; cursor: help;">sources</span>
 			and <code>?resolved</code> to show already resolved messages.
-		{% if show_statuses or show_resolved %} <a href="?page={{ entries.number }}">Remove filters</a>.{% endif %}
+		{% if show_statuses or show_sources or show_resolved %} <a href="?page={{ entries.number }}">Remove filters</a>.{% endif %}
 		<form action="{% url 'minimal_log_resolve_all' %}?{% if show_statuses %}show={{ show_statuses }}&{% endif %}{% if show_sources %}from={{ show_sources }}{% endif %}" method="POST" style="display: inline;">
 			{%  csrf_token %}
 			<input type="hidden" name="next" value="{{ request.path }}?{% if show_statuses %}show={{ show_statuses }}&{% endif %}{% if show_sources %}from={{ show_sources }}&{% endif %}{% if show_resolved %}resolved&{% endif %}" />
