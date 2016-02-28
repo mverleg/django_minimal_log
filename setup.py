@@ -17,7 +17,7 @@ setup(
 	author_email='mdilligaf@gmail.com',
 	license='LICENSE.txt',
 	keywords=['django', 'logging',],
-	version='0.4',
+	version='0.5',
 	packages=[
 		'minimal_log_host',
 		'minimal_logger',

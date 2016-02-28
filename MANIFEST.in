@@ -1,2 +1,3 @@
 include LICENSE.txt
 recursive-include minimal_log_host/templates *
+recursive-include minimal_logger *.html
