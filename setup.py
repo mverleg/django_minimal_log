@@ -25,7 +25,7 @@ setup(
 	],
 	include_package_data=True,
 	zip_safe=False,
-	requires=[
+	install_requires=[
 		'django',
 		'requests',
 		'django_ipware',
