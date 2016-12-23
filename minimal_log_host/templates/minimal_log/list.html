@@ -50,7 +50,7 @@
 			{% endif %}
 		</form>
 		<br />
-		{{ entry.description }}</div>
+		{{ entry.description|linebreaksbr }}</div>
 	{%  empty %}
 		{% if show_resolved %}
 			<p class="well"><strong>No log entries</strong>{% if show_statuses %} that match the criteria. <a href="?resolved">Remove criteria</a>?{% else %}!{% endif %}</p>
