@@ -15,7 +15,7 @@ class MinimalLogKey(models.Model):
 		help_text='Secret key used as authentication token (keep it secret!).')
 	active = models.BooleanField(default=True, help_text='Turn this off to disable the key.')
 	added = models.DateTimeField(auto_now_add=True)
-	adder = models.ForeignKey(settings.AUTH_USER_MODEL)
+	adder = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
 	def __str__(self):
 		return (self.description or '[no description]') + ' ...{0:s}'.format(self.key_end())
@@ -43,9 +43,9 @@ class MinimalLogEntry(models.Model):
 	status = models.CharField(max_length=8, choices=STATUS_OPTIONS, help_text='What kind of situation is this?')
 	added = models.DateTimeField(auto_now_add=True)
 	from_ip = models.CharField(max_length=16, null=True)
-	key = models.ForeignKey(MinimalLogKey, help_text='Key used to authenticate this log entry.')
+	key = models.ForeignKey(MinimalLogKey, help_text='Key used to authenticate this log entry.', null=True, on_delete=models.SET_NULL)
 	resolved = models.DateTimeField(default=None, null=True, blank=True)
-	solver = models.ForeignKey(settings.AUTH_USER_MODEL, default=None, blank=True, null=True)
+	solver = models.ForeignKey(settings.AUTH_USER_MODEL, default=None, blank=True, null=True, on_delete=models.SET_NULL)
 
 	def __str__(self):
 		return '{0:s} {1:s}'.format((self.get_status_display() or '').upper(),
