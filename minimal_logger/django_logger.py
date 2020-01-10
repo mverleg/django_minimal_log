@@ -1,6 +1,7 @@
 
-from sys import stderr
 from logging import Handler
+from sys import stderr
+
 from .python_log import send_log, MinimalLogError, try_get_domain
 
 

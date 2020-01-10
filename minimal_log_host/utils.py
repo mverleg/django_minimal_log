@@ -1,6 +1,6 @@
 
-from string import ascii_uppercase, digits
 from random import SystemRandom
+from string import ascii_uppercase, digits
 
 
 def generate_key(length=32):

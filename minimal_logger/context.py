@@ -1,14 +1,14 @@
 
-from time import time
-from urllib.parse import urlencode
-from django.conf import settings
-from django.core.signing import Signer
-from django.core.urlresolvers import reverse
-from django.middleware.csrf import get_token
-from django.utils.safestring import mark_safe
 from os.path import join, dirname
 from re import sub
+from time import time
+from urllib.parse import urlencode
 
+from django.conf import settings
+from django.core.signing import Signer
+from django.middleware.csrf import get_token
+from django.urls import reverse
+from django.utils.safestring import mark_safe
 
 signer = Signer()
 

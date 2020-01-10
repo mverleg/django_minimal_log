@@ -1,6 +1,7 @@
 
-from django.conf import settings
 from os.path import basename
+
+from django.conf import settings
 from requests import post
 
 

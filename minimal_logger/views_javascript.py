@@ -1,12 +1,13 @@
 
 from time import time
+
 from django.conf import settings
 from django.core.signing import Signer, BadSignature
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from ipware.ip import get_ip
-from .python_log import send_log, try_get_domain, MinimalLogError
 
+from .python_log import send_log, try_get_domain, MinimalLogError
 
 signer = Signer()
 IP_LOG_COUNTER = {}

@@ -4,6 +4,7 @@ from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.timesince import timesince
 from django.utils.timezone import now
+
 from .utils import generate_key
 
 
