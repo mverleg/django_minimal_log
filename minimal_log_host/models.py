@@ -68,7 +68,7 @@ class MinimalLogEntry(models.Model):
 	def unresolve(self, request):
 		if self.resolved is None:
 			raise AssertionError('log entry %s is not resolved' % self.pk)
-		assert request.user.is_authenticated()
+		assert request.user.is_authenticated
 		self.resolved = None
 		self.solver = None
 		self.save()
