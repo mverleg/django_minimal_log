@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
-from ipware.ip import get_ip
+from ipware.ip2 import get_client_ip as get_ip
 
 from .models import MinimalLogEntry, MinimalLogKey
 
