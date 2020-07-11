@@ -17,7 +17,7 @@ setup(
 	author_email='mdilligaf@gmail.com',
 	license='LICENSE.txt',
 	keywords=['django', 'logging',],
-	version='0.7.1',
+	version='0.7.2',
 	packages=[
 		'minimal_log_host',
 		'minimal_logger',
@@ -28,7 +28,7 @@ setup(
 	install_requires=[
 		'django',
 		'requests',
-		'django_ipware',
+		'django_ipware==2.*',
 	],
 	classifiers=[
 		'Development Status :: 5 - Production/Stable',
